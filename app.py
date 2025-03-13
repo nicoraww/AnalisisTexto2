@@ -4,6 +4,9 @@ from textblob import TextBlob
 import re
 from googletrans import Translator
 
+from streamlit_lottie import st_lottie
+import json
+
 # Configuración de la página
 st.set_page_config(
     page_title="Analizador de Texto Simple",
@@ -12,6 +15,11 @@ st.set_page_config(
 )
 
 # Título y descripción
+with open('ANIMACIONTEST.json') as source:
+    animation = json.load(source)
+
+st.lottie(animation, width=350)
+
 st.title("📝 Analizador de Texto con TextBlob")
 st.markdown("""
 Esta aplicación utiliza TextBlob para realizar un análisis básico de texto:

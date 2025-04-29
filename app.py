@@ -5,6 +5,7 @@ import re
 from googletrans import Translator
 from streamlit_lottie import st_lottie
 import json
+import time
 
 # Configuración de la página
 st.set_page_config(

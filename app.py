@@ -1,14 +1,13 @@
 import streamlit as st
-import pandas as pd
 from textblob import TextBlob
 import re
 from googletrans import Translator
 from streamlit_lottie import st_lottie
 import json
 import time
+import pandas as pd
 
-# Configuración de la página
-st.set_page_config(
+# Configuración de la página\ nst.set_page_config(
     page_title="Analizador de Texto Simple",
     page_icon="📊",
     layout="wide"
@@ -27,7 +26,7 @@ Esta aplicación utiliza TextBlob para realizar un análisis básico de texto:
 - Extracción de palabras clave
 - Análisis de frecuencia de palabras
 - Cálculo de velocidad de escritura
-- Conteo de prefijos seleccionados
+- Conteo de preposiciones seleccionadas
 """)
 
 # Sidebar: modo de entrada
@@ -43,7 +42,16 @@ def contar_palabras(texto):
     stop_words = set([
         'a','al','algo','algunas','algunos','ante','antes','como','con','contra',
         'cual','cuando','de','del','desde','donde','durante','e','el','ella',
-        # [... lista completa ...]
+        'ellas','ellos','en','entre','era','eras','es','esa','esas','ese','eso','esos',
+        'esta','estas','este','esto','estos','ha','había','han','has','hasta','he',
+        'la','las','le','les','lo','los','me','mi','mía','mías','mío','míos','mis','mucho',
+        'muchos','muy','nada','ni','no','nos','nosotras','nosotros','nuestra','nuestras',
+        'nuestro','nuestros','o','os','otra','otras','otro','otros','para','pero','poco',
+        'por','porque','que','quien','quienes','qué','se','sea','sean','según','sin','so',
+        'sobre','sois','somos','son','soy','su','sus','suya','suyas','suyo','suyos','también',
+        'tanto','te','tenéis','tenemos','tener','tengo','ti','tiene','tienen','todo','todos',
+        'tu','tus','tuya','tuyas','tuyo','tuyos','tú','un','una','uno','unos','vosotras',
+        'vosotros','vuestra','vuestras','vuestro','vuestros','y','ya','yo'
     ])
     palabras = re.findall(r"\b\w+\b", texto.lower())
     filtradas = [p for p in palabras if p not in stop_words and len(p) > 2]
@@ -53,7 +61,7 @@ def contar_palabras(texto):
     return dict(sorted(contador.items(), key=lambda x: x[1], reverse=True)), filtradas
 
 translator = Translator()
-# Traducción al inglés para análisis de sentimiento
+
 def traducir_texto(texto):
     try:
         return translator.translate(texto, src='es', dest='en').text
@@ -69,8 +77,10 @@ def procesar_texto(texto):
     subjetividad = blob.sentiment.subjectivity
     frases_o = [f.strip() for f in re.split(r'[.!?]+', texto_original) if f.strip()]
     frases_t = [f.strip() for f in re.split(r'[.!?]+', texto_ingles) if f.strip()]
-    combinadas = [{'original': frases_o[i], 'traducido': frases_t[i]} 
-                 for i in range(min(len(frases_o), len(frases_t)))]
+    combinadas = [
+        {'original': frases_o[i], 'traducido': frases_t[i]}
+        for i in range(min(len(frases_o), len(frases_t)))
+    ]
     contador_palabras, palabras = contar_palabras(texto_ingles)
     return {
         'sentimiento': sentimiento,
@@ -87,7 +97,7 @@ def crear_visualizaciones(res):
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Sentimiento y Subjetividad")
-        sent_norm = (res['sentimiento'] + 1) / 2  # normaliza a [0,1]
+        sent_norm = (res['sentimiento'] + 1) / 2
         st.write("**Sentimiento:**")
         st.progress(sent_norm)
         if res['sentimiento'] > 0.05:
@@ -106,18 +116,25 @@ def crear_visualizaciones(res):
         st.subheader("Palabras más frecuentes")
         top = dict(list(res['contador_palabras'].items())[:10])
         st.bar_chart(top)
-    # Conteo de prefijos
-    st.subheader("Conteo de Prefijos")
-    prefixes = ['a', 'ante', 'para', 'por', 'contar', 'desde']
+    # Conteo de Preposiciones
+    st.subheader("Conteo de Preposiciones")
+    preposiciones = [
+        'a','ante','bajo','cabe','con','contra','de','desde','durante','en','entre',
+        'hacia','hasta','mediante','para','por','según','sin','so','sobre','tras',
+        'versus','vía'
+    ]
     text_lower = res['texto_original'].lower()
-    prefix_counts = {p: len(re.findall(rf"\b{re.escape(p)}\b", text_lower)) for p in prefixes}
-    st.bar_chart(prefix_counts)
+    prep_counts = {
+        p: len(re.findall(rf"\b{re.escape(p)}\b", text_lower))
+        for p in preposiciones
+    }
+    st.bar_chart(prep_counts)
     # Texto traducido
     st.subheader("Texto Traducido")
     with st.expander("Ver traducción completa"):
         st.write("**Original:**", res['texto_original'])
         st.write("**Traducido:**", res['texto_traducido'])
-    # Frases
+    # Frases detectadas
     st.subheader("Frases detectadas")
     for i, f in enumerate(res['frases'][:10], 1):
         try:
@@ -131,7 +148,6 @@ def crear_visualizaciones(res):
 
 # Sesión para medir velocidad de escritura
 if "typing_start" not in st.session_state:
-    st.session_state.typing_start = time.time()
     st.session_state.typing_start = time.time()
 
 # Lógica principal

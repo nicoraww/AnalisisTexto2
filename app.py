@@ -120,6 +120,41 @@ def crear_visualizaciones(res):
         st.write('---')
 
 # Lógica principal
+# Iniciar contador de tiempo para medir velocidad de escritura
+if "typing_start" not in st.session_state:
+    st.session_state.typing_start = time.time()
+
+if modo == "Texto directo":
+    texto = st.text_area(
+        label="Ingresa tu texto para analizar",
+        value="",
+        height=200,
+        placeholder="Escribe o pega aquí el texto..."
+    )
+    if st.button("Analizar texto"):
+        if texto.strip():
+            # Calcular velocidad de escritura
+            elapsed = time.time() - st.session_state.typing_start
+            words = len(texto.split())
+            wpm = (words / elapsed) * 60 if elapsed > 0 else 0
+            # Procesar y visualizar
+            res = procesar_texto(texto)
+            crear_visualizaciones(res)
+            # Mostrar velocidad
+            st.info(f"💨 Velocidad de escritura: {wpm:.2f} palabras por minuto")
+        else:
+            st.warning("Por favor ingresa algún texto.")
+elif modo == "Archivo de texto":
+    archivo = st.file_uploader(
+        label="Selecciona un archivo",
+        type=["txt","csv","md"]
+    )
+    if archivo:
+        cont = archivo.getvalue().decode('utf-8')
+        if st.button("Analizar archivo"):
+            res = procesar_texto(cont)
+            crear_visualizaciones(res)
+
 if modo == "Texto directo":
     texto = st.text_area(
         label="Ingresa tu texto para analizar",

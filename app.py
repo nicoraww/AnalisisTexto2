@@ -91,17 +91,30 @@ def crear_visualizaciones(res):
         sent_norm = (res['sentimiento'] + 1) / 2
         st.write("**Sentimiento:**")
         st.progress(sent_norm)
-        if res['sentimiento'] > 0.05: st.success(f"Positivo ({res['sentimiento']:.2f})")
-        elif res['sentimiento'] < -0.05: st.error(f"Negativo ({res['sentimiento']:.2f})")
-        else: st.info(f"Neutral ({res['sentimiento']:.2f})")
+        if res['sentimiento'] > 0.05:
+            st.success(f"Positivo ({res['sentimiento']:.2f})")
+        elif res['sentimiento'] < -0.05:
+            st.error(f"Negativo ({res['sentimiento']:.2f})")
+        else:
+            st.info(f"Neutral ({res['sentimiento']:.2f})")
         st.write("**Subjetividad:**")
         st.progress(res['subjetividad'])
-        if res['subjetividad'] > 0.5: st.warning(f"Alta subjetividad ({res['subjetividad']:.2f})")
-        else: st.info(f"Baja subjetividad ({res['subjetividad']:.2f})")
+        if res['subjetividad'] > 0.5:
+            st.warning(f"Alta subjetividad ({res['subjetividad']:.2f})")
+        else:
+            st.info(f"Baja subjetividad ({res['subjetividad']:.2f})")
     with col2:
         st.subheader("Palabras frecuentes")
         top = dict(list(res['contador_palabras'].items())[:10])
         st.bar_chart(top)
+
+    # Conteo de Prefijos
+    st.subheader("Conteo de Prefijos")
+    prefixes = ['a', 'ante', 'para', 'por', 'contar', 'desde']
+    text_lower = res['texto_original'].lower()
+    prefix_counts = {p: len(re.findall(rf"{p}", text_lower)) for p in prefixes}
+    st.bar_chart(prefix_counts)
+
     st.subheader("Texto traducido")
     with st.expander("Ver traducción completa"):
         st.write("**Original:**")
@@ -109,10 +122,10 @@ def crear_visualizaciones(res):
         st.write("**Traducido:**")
         st.text(res['texto_traducido'])
     st.subheader("Frases detectadas")
-    for i, f in enumerate(res['frases'][:10],1):
+    for i, f in enumerate(res['frases'][:10], 1):
         try:
             blob_f = TextBlob(f['traducido'])
-            emo = '😊' if blob_f.sentiment.polarity>0.05 else ('😟' if blob_f.sentiment.polarity<-0.05 else '😐')
+            emo = '😊' if blob_f.sentiment.polarity > 0.05 else ('😟' if blob_f.sentiment.polarity < -0.05 else '😐')
         except:
             emo = ''
         st.write(f"{i}. {emo} **Original:** {f['original']}")

@@ -129,8 +129,32 @@ def crear_visualizaciones(res):
         st.write(f"   Traducción: \"{f['traducido']}\"")
         st.write('---')
 
-# Sesión para velocidad\if "typing_start" not in st.session_state:
+# Sesión para medir velocidad de escritura
+if "typing_start" not in st.session_state:
+    st.session_state.typing_start = time.time()
     st.session_state.typing_start = time.time()
 
 # Lógica principal
-if
+if modo == "Texto directo":
+    texto = st.text_area("Ingresa tu texto para analizar", key="input_text", height=200)
+    if st.button("Analizar texto", key="btn_text"):
+        if texto.strip():
+            elapsed = time.time() - st.session_state.typing_start
+            words = len(texto.split())
+            wpm = (words / elapsed) * 60 if elapsed > 0 else 0
+            res = procesar_texto(texto)
+            crear_visualizaciones(res)
+            st.info(f"💨 Velocidad de escritura: {wpm:.2f} palabras por minuto")
+        else:
+            st.warning("Por favor ingresa algún texto.")
+elif modo == "Archivo de texto":
+    archivo = st.file_uploader("Selecciona un archivo de texto", type=["txt","csv","md"], key="input_file")
+    if archivo is not None:
+        contenido = archivo.getvalue().decode('utf-8')
+        if st.button("Analizar archivo", key="btn_file"):
+            res = procesar_texto(contenido)
+            crear_visualizaciones(res)
+
+# Pie de página
+st.markdown("---")
+st.markdown("Desarrollado con ❤️ usando Streamlit y TextBlob")

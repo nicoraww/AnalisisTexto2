@@ -7,7 +7,8 @@ import json
 import time
 import pandas as pd
 
-# Configuración de la página\ nst.set_page_config(
+# Configuración de la página
+st.set_page_config(
     page_title="Analizador de Texto Simple",
     page_icon="📊",
     layout="wide"
